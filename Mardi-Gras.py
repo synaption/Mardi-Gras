@@ -6,6 +6,33 @@ import requests
 import RPi.GPIO as GPIO ## Import GPIO library
  
 from debounce_handler import debounce_handler
+
+mode=GPIO.getmode()
+GPIO.cleanup()
+
+servo1=26
+servo2=20
+relay1=19
+relay2=4
+
+sleeptime=1
+musicDelay=45
+servoDuty=50
+servoSpeed=1  #smaller number = faster
+servoFlag=1
+dabloonDelay=10
+
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(servo1, GPIO.OUT)
+GPIO.setup(servo2, GPIO.OUT)
+GPIO.setup(relay1, GPIO.OUT)
+GPIO.setup(relay2, GPIO.OUT)
+
+p = GPIO.PWM(25, 50) 
+p.start(servoDuty)       
+
+
  
 logging.basicConfig(level=logging.DEBUG)
  
@@ -15,23 +42,25 @@ class device_handler(debounce_handler):
     """
     #TRIGGERS = {str(sys.argv[1]): int(sys.argv[2])}
     #TRIGGERS = {"office": 52000}
-    TRIGGERS = {"light 1": 52000,"living room":51000}
+    TRIGGERS = {"throw me something": 52000}
 
     def act(self, client_address, state, name):
         print("State", state, "from client @", client_address)
-        # GPIO.setmode(GPIO.BOARD) ## Use board pin numbering
-        # GPIO.setup(int(7), GPIO.OUT)   ## Setup GPIO Pin to OUTPUT
-        # GPIO.output(int(7), state) ## State is true/false
-        if name=="light 1":
-            GPIO.setmode(GPIO.BOARD) ## Use board pin numbering
-            GPIO.setup(int(7), GPIO.OUT)   ## Setup GPIO Pin to OUTPUT
-            GPIO.output(int(7), state) ## State is true/false
-            requests.post("https://maker.ifttt.com/trigger/YOUR-EVENT/with/key/YOUR-SECRET-KEY") #REPLACE YOUR-EVENT AND YOUR-SECRET-KEY
-        elif name =="living room":
-            GPIO.setmode(GPIO.BOARD) ## Use board pin numbering
-            GPIO.setup(int(11), GPIO.OUT)   ## Setup GPIO Pin to OUTPUT
-            GPIO.output(int(11), state) ## State is true/false
-            requests.post("https://maker.ifttt.com/trigger/YOUR-EVENT/with/key/YOUR-SECRET-KEY") #REPLACE YOUR-EVENT AND YOUR-SECRET-KEY
+        time.sleep(musicDelay)
+        if name=="Hey Alexa, throw me something":
+            current = time.monotonic()
+            if current - last_print >= servoSpeed:
+                last_print = current
+                if servoFlag==1:
+                    servoDuty+=1
+                    if servoDuty==100:
+                        servoFlag=0
+                if servoFlag==0:
+                    servoDuty-=1
+                    if servoDuty==0:
+                        servoFlag=1
+                p.ChangeFrequency(100)  # change the frequency to 100 Hz (floats also work)
+                
         else:
             print("Device not found!")
 
