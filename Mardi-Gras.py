@@ -10,10 +10,10 @@ from debounce_handler import debounce_handler
 mode=GPIO.getmode()
 GPIO.cleanup()
 
-servo1=26
-servo2=20
-relay1=19
-relay2=4
+servo1=7
+servo2=8
+relay1=9
+relay2=11
 
 sleeptime=1
 musicDelay=45
